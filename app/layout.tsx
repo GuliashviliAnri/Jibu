@@ -1,0 +1,27 @@
+import type { Metadata } from "next";
+import { AuthProvider } from "./auth-client";
+import NavigationManager from "./components/NavigationManager";
+import "./globals.css";
+import "./auth-fixes.css";
+import "./real-estate-fixes.css";
+import "maplibre-gl/dist/maplibre-gl.css";
+import "./maps.css";
+import "./property-map.css";
+import "./address-picker.css";
+import "./map-controls.css";
+import "./map-filter.css";
+import "./cabinet-responsive.css";
+import "./form-success.css";
+import "./promotion-packages.css";
+import "./readability.css";
+import "./home.css";
+import "./profile-dashboard.css";
+import "./marketplace.css";
+import "./business.css";
+import "./community.css";
+import "./services.css";
+import "./vip-broker-v2.css";
+import "./navigation-performance.css";
+import "./real-estate/add/submission.css";
+export const metadata:Metadata={title:"JIBU",description:"იცხოვრე, დაუკავშირდი, განვითარდი — ყველაფერი ერთ სივრცეში.",other:{"codex-preview":"development"},icons:{icon:[{url:"/assets/jibu-favicon-light.png",type:"image/png",sizes:"256x256"}],shortcut:"/assets/jibu-favicon-light.png",apple:"/assets/jibu-favicon-light.png"}};
+export default function RootLayout({children}:Readonly<{children:React.ReactNode}>){return <html lang="ka"><body><AuthProvider><NavigationManager/>{children}</AuthProvider></body></html>}

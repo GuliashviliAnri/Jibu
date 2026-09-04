@@ -1,0 +1,61 @@
+/* Compact home surfaces in JIBU's existing navy / violet palette. */
+.home-content .home-hero { height:auto; min-height:0; display:flex; flex-direction:column; isolation:isolate; }
+.home-hero-slide { flex:none; min-width:0; animation:home-slide-in .35s ease-out; }
+.home-hero-content > img { object-fit:cover; z-index:-2; }
+.home-hero-content .hero-shade { z-index:-1; background:linear-gradient(90deg,#071027f5,#071027c9 48%,#07102740); }
+.home-content .home-hero .hero-copy { padding:28px 30px 14px; max-width:590px; }
+.home-hero .hero-kicker { margin-bottom:12px; letter-spacing:.03em; }
+.home-hero .hero-copy h1 { line-height:1.35; margin:0 0 12px; }
+.home-hero .hero-copy p { max-width:430px; margin:0 0 16px; line-height:1.6; }
+.home-hero .hero-copy a { min-height:44px; padding:10px 15px; display:inline-flex; align-items:center; justify-content:center; gap:9px; border-radius:10px; font-size:.875rem; font-weight:600; line-height:1.5; }
+.home-hero .hero-copy a.primary { background:#6c47ef; box-shadow:none; }
+.home-hero-controls { position:absolute; right:30px; bottom:22px; z-index:3; display:flex; align-items:center; color:white; }
+.home-content .home-hero .hero-copy { max-width:680px; min-height:500px; padding:58px 48px 30px; display:flex; flex-direction:column; align-items:flex-start; }
+.home-hero .hero-copy h1{font-size:clamp(2.35rem,4vw,3.55rem);line-height:1.08;letter-spacing:-.045em;max-width:650px}.home-hero .hero-copy p{font-size:1rem;line-height:1.72;max-width:560px}.home-hero .hero-kicker{font-size:.82rem;font-weight:800}.home-hero-content .hero-shade{background:linear-gradient(90deg,#061027f7 0,#061027d9 43%,#06102770 68%,#06102718)}
+.home-hero .hero-copy > div { margin-top:auto; padding-top:28px; padding-right:120px; min-height:44px; display:flex; align-items:center; flex-wrap:wrap; gap:8px; width:100%; }
+.home-content .black-card { height:auto; min-height:245px; background:#080e22; isolation:isolate; }
+.home-content .black-card > div { position:relative; z-index:1; }
+.home-content .black-card .black-card-art { object-fit:cover; object-position:70% center; z-index:-1; }
+.home-content .black-card > div { display:flex; flex-direction:column; align-items:flex-start; gap:7px; min-height:0; }
+.home-content .black-card h2 { margin:2px 0 0; line-height:1.2; letter-spacing:-.03em; }
+.home-content .black-card p { max-width:62%; margin:0; line-height:1.48; color:#e3dfef; font-weight:400; }
+.home-content .black-card .premium-label { font-size:.75rem; letter-spacing:0; color:#c3b6e5; }
+.black-coming { margin-top:4px; padding:6px 10px; border:1px solid #b9a2f044; border-radius:7px; font-size:.75rem; line-height:1.5; color:#ddd3f6; background:#141329a6; }
+.home-content .women-card { height:auto; min-height:245px; isolation:isolate; }
+.home-content .women-card > img { width:100%;height:100%;object-fit:cover;object-position:64% center;right:0;bottom:0;z-index:-1; }
+.home-content .women-card:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#f7f3fff7 0,#f7f3ffe8 40%,transparent 72%);z-index:-1}.home-content .women-card > div { width:52%; }
+.home-content .women-card h2 { font-size:1.125rem; line-height:1.4; }
+.home-content .women-card p { line-height:1.6; }
+.home-hero-dots { display:flex; align-items:center; margin-left:auto; gap:2px; }
+.home-hero-dots button { width:26px; height:40px; padding:0; display:grid; place-items:center; background:none; border:0; }
+.home-hero-dots span { width:6px; height:6px; border-radius:20px; background:#ffffff66; transition:width .2s ease,background .2s ease; }
+.home-hero-dots button[aria-current] span { width:21px; background:#b7a2ff; }
+.home-hero :is(a,button):focus-visible { outline:2px solid #c5b4ff; outline-offset:3px; }
+.home-content .home-categories { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; scroll-margin-top:100px; }
+.home-content .home-categories .category-tile { flex:1 1 130px; min-width:0; min-height:92px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:15px 10px; border:1px solid #e7e4ef; border-radius:14px; background:#fff; text-align:center; box-shadow:none; transition:border-color .18s ease,background .18s ease; }
+.home-content .home-categories .category-tile:hover { transform:none; border-color:#c4b4f0; background:#faf8ff; box-shadow:none; }
+.home-categories .category-tile:focus-visible { outline:2px solid #7451e8; outline-offset:3px; }
+.home-content .home-categories .category-icon { display:grid; place-items:center; width:36px; height:36px; flex-shrink:0; border-radius:11px; background:#f1ecff; color:#6846e8; }
+.home-content .home-categories .category-name { font-size:.875rem; line-height:1.5; font-weight:600; color:#202940; overflow-wrap:anywhere; }
+.home-content .wallet-card { padding:20px; background:#fff; border-color:#e3e1ec; }
+.home-content .wallet-icon { flex-shrink:0; margin:0; background:#f0ebff; }
+.home-content .wallet-card > svg { display:none; }
+.home-content #home-market { scroll-margin-top:100px; }
+.sidebar .ai-agent { margin-top:14px; padding:12px; border-radius:12px; min-height:0; }
+.sidebar .ai-agent .agent-title { align-items:center; gap:8px; }
+.sidebar .ai-agent .agent-title strong { font-size:.875rem; }
+.sidebar .ai-agent .agent-title span { padding:2px 5px; font-size:.75rem; line-height:1.5; }
+.sidebar .ai-agent p { margin:7px 0 10px; font-size:.875rem; line-height:1.4; }
+.sidebar .ai-agent button { min-height:36px; padding:7px 10px; font-size:.875rem; line-height:1.4; box-shadow:none; background:#6846e8; }
+@keyframes home-slide-in { from { opacity:.55; } to { opacity:1; } }
+@media(max-width:760px) {
+  .home-content .home-hero { min-height:0; }
+  .home-content .home-hero .hero-copy { min-height:460px; padding:32px 20px 24px; }
+  .home-hero .hero-copy > div { flex-direction:row; flex-wrap:wrap; gap:8px; }
+  .home-hero-controls { right:20px; bottom:22px; padding:0; }
+  .home-content .home-hero .hero-copy { padding-bottom:24px; }
+  .home-hero .hero-copy > div { padding-right:108px; }
+  .home-content .home-categories .category-tile { flex-basis:calc(50% - 10px); }
+}
+@media(prefers-reduced-motion:reduce) { .home-hero-slide { animation:none; } .home-hero-dots span,.home-content .home-categories .category-tile { transition:none; } }
+.home-hero .hero-copy h1 br{display:inline}.home-hero .hero-copy h1 br:after{content:" "}

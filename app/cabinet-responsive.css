@@ -1,0 +1,42 @@
+/* Cabinet layout: compact and overflow-safe from desktop to small phones. */
+.cabinet-page,.cabinet-page *{min-width:0}
+.cabinet-property-copy h2,.cabinet-property-copy p{overflow-wrap:anywhere}
+
+@media(max-width:900px){
+  .cabinet-page>header{gap:14px}
+  .cabinet-page>header>a{flex:none}
+  .cabinet-list article.managed-listing{grid-template-columns:132px minmax(0,1fr)}
+  .cabinet-list article.managed-listing .cabinet-photo{height:112px}
+  .listing-management{grid-template-columns:1fr 1fr!important}
+  .listing-management .renew-listing,.listing-management .listing-actions{grid-column:1/-1}
+}
+
+@media(max-width:640px){
+  .cabinet-page{padding-bottom:42px}
+  .cabinet-page>header{align-items:stretch}
+  .cabinet-page>header>a{width:100%;justify-content:center}
+  .analytics-overview{border-radius:17px;padding:20px!important}
+  .cabinet-stats{gap:8px}
+  .cabinet-stats div{min-height:88px;padding:14px}
+  .cabinet-stats span{line-height:1.35}
+  .cabinet-stats b{font-size:1.375rem}
+  .cabinet-section-head{align-items:flex-start}
+  .cabinet-list article.managed-listing{grid-template-columns:1fr!important;gap:12px;padding:10px;border-radius:15px}
+  .cabinet-list article.managed-listing .cabinet-photo{width:100%;height:190px;border-radius:11px}
+  .cabinet-property-copy{padding:3px 4px 7px!important}
+  .cabinet-property-copy h2{font-size:1rem;line-height:1.35}
+  .listing-management{display:grid!important;grid-template-columns:1fr!important;padding:12px 3px 3px!important;gap:10px!important}
+  .listing-management>b,.listing-management .vip-manager,.listing-management .renew-listing,.listing-management .listing-actions{grid-column:1/-1}
+  .listing-management>b{text-align:left!important}
+  .listing-management .vip-manager>div{grid-template-columns:minmax(0,1fr) 58px!important}
+  .listing-management .vip-manager button{grid-column:1/-1;width:100%;height:38px!important}
+  .listing-management .listing-actions{display:grid;grid-template-columns:1fr 1fr 1fr;width:100%;gap:6px!important}
+  .listing-management .listing-actions a,.listing-management .listing-actions button{width:100%;padding:8px 5px!important;white-space:nowrap}
+}
+
+@media(max-width:390px){
+  .cabinet-page{padding-left:10px!important;padding-right:10px!important}
+  .cabinet-stats{grid-template-columns:1fr!important}
+  .cabinet-stats div{min-height:70px;flex-direction:row;align-items:center;justify-content:space-between}
+  .listing-management .listing-actions{grid-template-columns:1fr}
+}

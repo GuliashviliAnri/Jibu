@@ -1,0 +1,4 @@
+"use client";
+import { useState } from "react";
+const groups=[{name:"უძრავი ქონება",items:["ბინა ვაკეში","ბინა საბურთალოზე"]},{name:"მარკეტპლეისი",items:["ბაღის ავეჯი","ბლენდერი"]},{name:"ბიზნესი",items:["ბუღალტრული მომსახურება"]},{name:"ღონისძიებები",items:["ბიზნეს ფორუმი"]}];
+export default function AISearch(){const[q,setQ]=useState("");return <div className="ai-search"><span className="ai-spark">✦</span><input value={q} onChange={e=>setQ(e.target.value)} aria-label="JIBU AI Search" placeholder="რას ეძებ დღეს? ბინა, პროდუქტი, ღონისძიება..."/><kbd>/</kbd>{q.trim()&&<div className="search-results"><div className="search-result-title">JIBU AI Search</div>{groups.map(g=><section key={g.name}><h4>{g.name}</h4>{g.items.filter(i=>i.includes(q)||q.length===1).map(i=><button key={i}>{i}<span>→</span></button>)}</section>)}</div>}</div>}
