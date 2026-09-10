@@ -146,7 +146,7 @@ export default function PropertyWorkspace({supabaseUrl,publishableKey}:{supabase
         </div>
         <div className="re-page-actions">
           <a className="vip-link" href="/real-estate/vip-broker">
-            VIP Broker · 29 ₾
+            VIP Broker · უფასო ბეტა
           </a>
           <a href="/real-estate/cabinet">ჩემი განცხადებები</a>
           <a className="primary" href="/real-estate/add">
