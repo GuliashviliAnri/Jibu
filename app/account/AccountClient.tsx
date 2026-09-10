@@ -1,15 +1,38 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { SESSION_KEY, authChanged, navigateApp, verifiedUser, safeNext } from "../auth-client";
 type Mode = "login" | "register";
 type Session = {
   access_token: string;
+  refresh_token?: string;
+  expires_in?: number;
+  expires_at?: number;
+  token_type?: string;
   user: {
+    id?: string;
     email?: string;
     user_metadata?: { full_name?: string; phone?: string };
   };
 };
+
+function authErrorMessage(value: unknown) {
+  const message = String(value || "").toLowerCase();
+  if (message.includes("invalid login credentials"))
+    return "ელფოსტა ან პაროლი არასწორია.";
+  if (message.includes("email not confirmed"))
+    return "ჯერ დაადასტურე ანგარიში ელფოსტაზე მიღებული ბმულით.";
+  if (message.includes("user already registered"))
+    return "ამ ელფოსტით ანგარიში უკვე არსებობს — სცადე შესვლა.";
+  if (message.includes("rate limit") || message.includes("too many requests"))
+    return "ელფოსტის გაგზავნის ლიმიტი ამოიწურა. ცოტა ხანში სცადე თავიდან.";
+  if (message.includes("unable to validate email"))
+    return "ელფოსტის მისამართი არასწორია ან წერილის მიღება ვერ მოხერხდა.";
+  if (message.includes("password") && message.includes("6"))
+    return "პაროლი მინიმუმ 6 სიმბოლოსგან უნდა შედგებოდეს.";
+  return String(value || "მოთხოვნა ვერ შესრულდა");
+}
 export default function AccountClient({
   url,
   publishableKey,
@@ -23,9 +46,26 @@ export default function AccountClient({
     [message, setMessage] = useState(""),
     [switching, setSwitching] = useState(false);
   useEffect(() => {
-    void verifiedUser().then(user => {
-      if (user) { try { const saved = JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); if(saved) setSession({...saved,user}); } catch {} }
-    });
+    let disposed = false;
+    const finish = async () => {
+      const callbackError = new URLSearchParams(location.search).get(
+        "auth_error",
+      );
+      if (callbackError) setMessage(authErrorMessage(callbackError));
+      const user = await verifiedUser();
+      if (!disposed && user) {
+        try {
+          const saved = JSON.parse(
+            localStorage.getItem(SESSION_KEY) || "null",
+          );
+          if (saved) setSession({ ...saved, user });
+        } catch {}
+      }
+    };
+    void finish();
+    return () => {
+      disposed = true;
+    };
   }, []);
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -34,10 +74,14 @@ export default function AccountClient({
     const data = new FormData(e.currentTarget),
       email = String(data.get("email") || "").trim(),
       password = String(data.get("password") || "");
+    const next = safeNext(new URLSearchParams(location.search).get("next"));
+    const confirmation = new URL("/account", location.origin);
+    confirmation.searchParams.set("confirmed", "1");
+    if (next) confirmation.searchParams.set("next", next);
     const endpoint =
       mode === "login"
         ? "/auth/v1/token?grant_type=password"
-        : "/auth/v1/signup";
+        : `/auth/v1/signup?redirect_to=${encodeURIComponent(confirmation.href)}`;
     const body: Record<string, unknown> = { email, password };
     if (mode === "register")
       body.data = {
@@ -56,23 +100,28 @@ export default function AccountClient({
         result = await res.json();
       if (!res.ok)
         throw new Error(
-          result.msg ||
-            result.error_description ||
-            result.message ||
-            "მოთხოვნა ვერ შესრულდა",
+          authErrorMessage(
+            result.msg ||
+              result.error_description ||
+              result.message ||
+              "მოთხოვნა ვერ შესრულდა",
+          ),
         );
       if (result.access_token) {
         localStorage.setItem(SESSION_KEY, JSON.stringify(result));
         setSession(result);
         authChanged();
-        const next = safeNext(new URLSearchParams(location.search).get("next"));
         navigateApp(next || "/",true);
       } else
         setMessage(
           "რეგისტრაცია დასრულდა. ელფოსტაზე გამოგზავნილი ბმულით დაადასტურე ანგარიში.",
         );
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "დაფიქსირდა შეცდომა");
+      setMessage(
+        err instanceof Error
+          ? authErrorMessage(err.message)
+          : "დაფიქსირდა შეცდომა",
+      );
     } finally {
       setLoading(false);
     }
@@ -100,7 +149,7 @@ export default function AccountClient({
     <main className="new-auth-page">
       <div className="new-auth-glow" aria-hidden />
       <header className="new-auth-header">
-        <a className="new-auth-brand" href="/" aria-label="JIBU მთავარი გვერდი">
+        <Link className="new-auth-brand" href="/" aria-label="JIBU მთავარი გვერდი">
           <Image
             unoptimized
             src="/assets/logo-transparent.png"
@@ -109,10 +158,10 @@ export default function AccountClient({
             height={300}
             priority
           />
-        </a>
-        <a className="new-auth-home" href="/">
+        </Link>
+        <Link className="new-auth-home" href="/">
           <span>←</span> მთავარი გვერდი
-        </a>
+        </Link>
       </header>
       <section className={`new-auth-card${switching ? " switching" : ""}`}>
         {session ? (
@@ -164,13 +213,19 @@ export default function AccountClient({
                 <div className="new-auth-row">
                   <label>
                     სახელი და გვარი
-                    <input name="name" placeholder="ანრი გულიაშვილი" required />
+                    <input
+                      name="name"
+                      autoComplete="name"
+                      placeholder="ანრი გულიაშვილი"
+                      required
+                    />
                   </label>
                   <label>
                     ტელეფონი
                     <input
                       name="phone"
                       type="tel"
+                      autoComplete="tel"
                       placeholder="+995 5XX XX XX XX"
                       required
                     />
@@ -182,6 +237,8 @@ export default function AccountClient({
                 <input
                   name="email"
                   type="email"
+                  autoComplete="email"
+                  inputMode="email"
                   placeholder="name@example.com"
                   required
                 />
@@ -191,6 +248,9 @@ export default function AccountClient({
                 <input
                   name="password"
                   type="password"
+                  autoComplete={
+                    mode === "login" ? "current-password" : "new-password"
+                  }
                   minLength={6}
                   placeholder="მინიმუმ 6 სიმბოლო"
                   required
