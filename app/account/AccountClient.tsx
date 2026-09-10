@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
-import { SESSION_KEY, authChanged, verifiedUser, safeNext } from "../auth-client";
+import { SESSION_KEY, authChanged, navigateApp, verifiedUser, safeNext } from "../auth-client";
 type Mode = "login" | "register";
 type Session = {
   access_token: string;
@@ -66,7 +66,7 @@ export default function AccountClient({
         setSession(result);
         authChanged();
         const next = safeNext(new URLSearchParams(location.search).get("next"));
-        location.assign(next || "/");
+        navigateApp(next || "/",true);
       } else
         setMessage(
           "რეგისტრაცია დასრულდა. ელფოსტაზე გამოგზავნილი ბმულით დაადასტურე ანგარიში.",

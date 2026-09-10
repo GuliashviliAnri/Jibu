@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { Icon } from "../page";
-import { SESSION_KEY, authChanged, useAuth } from "../auth-client";
+import { SESSION_KEY, authChanged, navigateApp, useAuth } from "../auth-client";
 
 type Wallet={balance_tetri:number;currency:string};
 type Transaction={id:string;amount_tetri:number;transaction_type:string;status:string;description:string|null;created_at:string};
@@ -25,13 +25,13 @@ export default function ProfileDashboard({supabaseUrl,publishableKey}:{supabaseU
  return <main className="profile-dashboard">
   <header className="profile-dashboard-head"><div><span>ჩემი სივრცე</span><h1>გამარჯობა, {name.split(" ")[0]}</h1><p>მართე შენი ანგარიში, წევრობა და გადახდები ერთ სივრცეში.</p></div><a href="/real-estate/add">განცხადების დამატება</a></header>
   <section className="profile-overview">
-   <article className="profile-identity-card"><div className="profile-large-avatar">{initials||"JI"}</div><div><small>JIBU ანგარიში</small><h2>{name}</h2><p>{user?.email}</p><span><i/> ანგარიში აქტიურია</span></div><div className="profile-account-actions"><button type="button" onClick={()=>setEditing(true)}>პროფილის რედაქტირება</button><button className="profile-logout" type="button" onClick={()=>{localStorage.removeItem(SESSION_KEY);authChanged();location.assign("/account")}}>გასვლა</button></div></article>
+   <article className="profile-identity-card"><div className="profile-large-avatar">{initials||"JI"}</div><div><small>JIBU ანგარიში</small><h2>{name}</h2><p>{user?.email}</p><span><i/> ანგარიში აქტიურია</span></div><div className="profile-account-actions"><button type="button" onClick={()=>setEditing(true)}>პროფილის რედაქტირება</button><button className="profile-logout" type="button" onClick={()=>{localStorage.removeItem(SESSION_KEY);authChanged();navigateApp("/account",true)}}>გასვლა</button></div></article>
    <article className="profile-wallet-card"><div className="profile-card-icon"><Icon name="wallet" size={23}/></div><small>JIBU საფულე</small><strong>{money(wallet.balance_tetri)}</strong><p>ხელმისაწვდომი ბალანსი</p><button type="button">ბალანსის შევსება</button></article>
    <article className="profile-black-card"><div className="black-orbit" aria-hidden/><span><Icon name="crown" size={17}/> JIBU BLACK</span><h2>გამორჩეული წევრობა</h2><p>სპეციალური შეთავაზებები, პრივილეგიები და მეტი შესაძლებლობა.</p><div><b>ჯერ არ არის აქტიური</b><button type="button">გაიგე მეტი</button></div></article>
   </section>
   <section className="profile-main-grid">
    <article className="profile-transactions"><header><div><span>ფინანსები</span><h2>ბოლო ტრანზაქციები</h2></div>{transactions.length>0&&<button type="button">ყველას ნახვა</button>}</header>
-    {loading?<div className="profile-loading">ტრანზაქციები იტვირთება…</div>:transactions.length?<div className="transaction-list">{transactions.map(item=><div key={item.id}><span className={item.amount_tetri>=0?"income":"expense"}>{item.amount_tetri>=0?"+":"−"}</span><div><b>{item.description||labels[item.transaction_type]||"ტრანზაქცია"}</b><small>{new Date(item.created_at).toLocaleDateString("ka-GE",{day:"numeric",month:"long",year:"numeric"})}</small></div><strong className={item.amount_tetri>=0?"income":""}>{item.amount_tetri>=0?"+":"−"}{money(Math.abs(item.amount_tetri))}</strong></div>)}</div>:<div className="transactions-empty"><span><Icon name="wallet" size={24}/></span><h3>ტრანზაქციები ჯერ არ გაქვს</h3><p>ბალანსის შევსება და ყველა გადახდა აქ გამოჩნდება.</p></div>}
+    {loading?<div className="transactions-pending" aria-hidden/>:transactions.length?<div className="transaction-list">{transactions.map(item=><div key={item.id}><span className={item.amount_tetri>=0?"income":"expense"}>{item.amount_tetri>=0?"+":"−"}</span><div><b>{item.description||labels[item.transaction_type]||"ტრანზაქცია"}</b><small>{new Date(item.created_at).toLocaleDateString("ka-GE",{day:"numeric",month:"long",year:"numeric"})}</small></div><strong className={item.amount_tetri>=0?"income":""}>{item.amount_tetri>=0?"+":"−"}{money(Math.abs(item.amount_tetri))}</strong></div>)}</div>:<div className="transactions-empty"><span><Icon name="wallet" size={24}/></span><h3>ტრანზაქციები ჯერ არ გაქვს</h3><p>ბალანსის შევსება და ყველა გადახდა აქ გამოჩნდება.</p></div>}
    </article>
    <aside className="profile-quick-panel"><span>სწრაფი მოქმედებები</span><h2>შენი JIBU</h2>
     <a href="/real-estate/cabinet"><Icon name="building" size={20}/><div><b>ჩემი განცხადებები</b><small>მართვა და ანალიტიკა</small></div><Icon name="arrow" size={17}/></a>

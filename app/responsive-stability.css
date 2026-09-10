@@ -1,0 +1,525 @@
+/*
+ * Site-wide layout guardrails.
+ * This file is intentionally imported last so every route follows the same
+ * responsive rules without changing JIBU's established visual language.
+ */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+
+html { scrollbar-gutter: stable; }
+body { min-height: 100dvh; }
+a,button,[role="button"] { touch-action: manipulation; }
+
+@supports (overflow: clip) {
+  html,
+  body { overflow-x: clip; }
+}
+
+.app-shell,
+.page,
+.topbar,
+.content,
+.primary-column,
+.right-rail,
+main,
+section,
+article,
+form,
+fieldset {
+  min-width: 0;
+}
+
+.app-shell {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: clip;
+}
+
+.page {
+  width: auto;
+  max-width: calc(100vw - var(--sidebar));
+}
+
+.sidebar-collapsed .page { max-width: 100vw; }
+.topbar { width: 100%; max-width: 100%; }
+
+img,
+video,
+canvas {
+  max-width: 100%;
+}
+
+input,
+select,
+textarea,
+button {
+  min-width: 0;
+  max-width: 100%;
+}
+
+:where(h1,h2,h3,h4,p,small,strong) {
+  overflow-wrap: break-word;
+}
+
+.promotion-carousel,
+.home-promotion-carousel,
+.property-row,
+.promotion-rail,
+.business-categories,
+.community-topics,
+.market-categories,
+.detail-thumbs,
+.excel-scroll {
+  max-width: 100%;
+}
+
+.promotion-carousel,
+.home-promotion-carousel { overflow: hidden; }
+
+/* Medium desktop widths need one main column before cards become cramped. */
+@media(max-width:1280px){
+  .content { grid-template-columns: 1fr; }
+  .right-rail {
+    display: grid;
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    margin-top: 18px;
+  }
+  .category-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
+  .property-row { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .profile-overview { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .profile-identity-card { grid-column: 1/-1; }
+  .profile-main-grid { grid-template-columns: 1fr; }
+}
+
+/* A tablet should not inherit a narrow desktop canvas beside the sidebar. */
+@media(max-width:1100px){
+  :root { --sidebar: 0px; }
+
+  .sidebar { display: none; }
+  .page,
+  .sidebar-collapsed .page {
+    margin-left: 0;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  .sidebar-toggle { display: none; }
+  .mobile-menu,
+  .mobile-logo { display: block; }
+
+  .topbar {
+    min-height: 72px;
+    height: auto;
+    padding: 12px 18px;
+    gap: 10px;
+    border-bottom: 1px solid var(--line);
+    background: #fffffff5;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(14px);
+  }
+
+  .mobile-menu { flex: 0 0 40px; }
+  .mobile-menu summary {
+    list-style: none;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    background: #fff;
+  }
+  .mobile-menu summary::-webkit-details-marker { display: none; }
+  .mobile-menu summary span {
+    width: 17px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--navy);
+  }
+  .mobile-menu > div {
+    position: absolute;
+    left: 14px;
+    top: 62px;
+    width: min(360px,calc(100vw - 28px));
+    max-height: calc(100vh - 82px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 20px 48px #0b132b2b;
+  }
+  .mobile-menu a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px;
+    border-radius: 10px;
+    font-size: .875rem;
+  }
+  .mobile-menu a:hover { background: #f4f0ff; color: #603be0; }
+
+  .mobile-logo {
+    flex: 0 0 104px;
+    height: 42px;
+  }
+  .mobile-logo img {
+    width: 100px;
+    height: 42px;
+    object-fit: contain;
+    object-position: left center;
+  }
+
+  .ai-search { min-width: 160px; }
+  .header-actions { flex: 0 0 auto; }
+  .header-actions > button:first-child { display: none; }
+
+  .content,
+  .re-main,
+  .property-detail,
+  .marketplace-main,
+  .market-detail,
+  .business-main,
+  .community-main,
+  .services-main,
+  .women-main,
+  .profile-dashboard,
+  .listing-form-page,
+  .cabinet-page,
+  .vip-broker-page {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .listing-form-page form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .listing-form-page form > * { width: 100%; }
+  .form-heading aside { flex: 0 0 auto; }
+
+  .excel-panel,
+  .sidebar-collapsed .excel-panel { left: 14px; }
+}
+
+@media(max-width:760px){
+  .topbar {
+    padding: 11px 14px 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .mobile-menu { order: 1; }
+  .mobile-logo { order: 2; flex: 1 1 auto; }
+  .header-actions { order: 3; margin-left: auto; gap: 4px; }
+  .ai-search {
+    order: 4;
+    flex: 1 0 100%;
+    width: 100%;
+    height: 43px;
+  }
+
+  .header-actions > button {
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+  }
+  .header-login {
+    min-width: 82px;
+    height: 38px;
+    padding: 0 13px;
+  }
+
+  .search-results {
+    position: fixed;
+    top: 116px;
+    left: 14px;
+    right: 14px;
+    width: auto;
+    max-width: none;
+  }
+
+  .content,
+  .re-main,
+  .property-detail,
+  .marketplace-main,
+  .market-detail,
+  .business-main,
+  .community-main,
+  .services-main,
+  .women-main,
+  .profile-dashboard,
+  .listing-form-page,
+  .cabinet-page,
+  .vip-broker-page {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .content { display: block; }
+  .right-rail { grid-template-columns: 1fr; }
+
+  .hero,
+  .re-intro,
+  .market-intro,
+  .business-title,
+  .community-welcome,
+  .services-hero > div,
+  .services-hero > aside,
+  .vip2-hero { max-width: 100%; }
+
+  .hero-copy,
+  .market-copy,
+  .re-intro,
+  .business-title,
+  .community-welcome,
+  .services-hero > div,
+  .vip2-hero {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+
+  .hero-copy h1,
+  .re-intro h1,
+  .market-intro h1,
+  .business-title h1,
+  .community-welcome h1,
+  .services-hero h1,
+  .vip2-copy h1 {
+    font-size: clamp(1.65rem,8vw,2rem) !important;
+    line-height: 1.2 !important;
+  }
+
+  .re-search-panel,
+  .re-main section.re-search-panel {
+    width: auto;
+    max-width: calc(100% - 20px);
+    grid-template-columns: minmax(0,1fr);
+  }
+  .re-search-panel > *,
+  .re-main .re-search-panel > * { max-width: 100%; }
+
+  .location-filter-popover {
+    left: 14px;
+    right: 14px;
+    width: auto;
+    max-width: calc(100vw - 28px);
+  }
+
+  .filter-summary,
+  .re-title,
+  .re-page-actions,
+  .market-filter-row,
+  .market-toolbar,
+  .map-toolbar { max-width: 100%; }
+  .filter-summary { flex-wrap: wrap; row-gap: 7px; }
+  .filter-summary button { margin-left: 0; }
+  .re-page-actions { width: 100%; display: flex; flex-wrap: wrap; }
+  .re-page-actions a { flex: 1 1 150px; justify-content: center; text-align: center; }
+
+  .re-types,
+  .cabinet-stats,
+  .neighborhood-market-grid,
+  .profile-overview,
+  .vip2-proof { grid-template-columns: repeat(2,minmax(0,1fr)); }
+
+  .re-grid,
+  .business-grid,
+  .provider-grid,
+  .broker-benefit-grid,
+  .vip2-benefit-grid { grid-template-columns: 1fr; }
+
+  .form-heading,
+  .cabinet-page > header,
+  .profile-dashboard-head,
+  .re-title,
+  .vip2-bottom {
+    align-items: stretch;
+  }
+
+  .form-heading aside,
+  .cabinet-page > header > a,
+  .profile-dashboard-head > a { width: 100%; }
+
+  .form-grid,
+  .role-choice,
+  .detail-content,
+  .market-detail > section,
+  .business-top,
+  .business-layout,
+  .community-layout,
+  .services-hero,
+  .services-layout,
+  .profile-main-grid,
+  .analytics-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-facts { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .detail-facts span { min-width: 0; }
+
+  .photo-viewer {
+    grid-template-columns: 40px minmax(0,1fr) 40px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .cart-drawer { width: 100%; max-width: 430px; }
+  .cart-drawer header,
+  .cart-list,
+  .cart-drawer footer { padding-left: 18px; padding-right: 18px; }
+
+  .map-workspace {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .map-toolbar,
+  .live-location-picker footer,
+  .property-live-map footer { width: 100%; }
+
+  input,
+  select,
+  textarea { font-size: 16px !important; }
+
+  .new-auth-page {
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .new-auth-card { min-height: 0; }
+
+  .excel-panel,
+  .sidebar-collapsed .excel-panel {
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-width: calc(100vw - 20px);
+  }
+}
+
+@media(max-width:520px){
+  .header-actions > button:nth-child(2) { display: none; }
+
+  .market-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .market-product-copy h3,
+  .market-product-copy p,
+  .market-product-copy small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .cabinet-page .cabinet-list article.managed-listing,
+  .cabinet-list article {
+    grid-template-columns: 1fr !important;
+  }
+  .cabinet-list article.managed-listing .cabinet-photo,
+  .cabinet-photo {
+    width: 100%;
+    height: 180px;
+  }
+
+  .cabinet-page .cabinet-promotion {
+    grid-template-columns: minmax(72px,.7fr) minmax(0,1fr) !important;
+  }
+  .cabinet-page .cabinet-promotion button {
+    grid-column: 1/-1;
+    width: 100%;
+  }
+
+  .listing-form-page form > .compact-form-promo {
+    grid-template-columns: minmax(0,1fr) 44px;
+  }
+  .listing-form-page .compact-form-promo .promo-period-options {
+    left: 0;
+    right: auto;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .form-checkout {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .form-checkout button { width: 100%; justify-content: center; }
+  .uploaded-photo-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+
+  .profile-account-actions,
+  .profile-edit-dialog > footer { flex-direction: column; }
+  .profile-account-actions > *,
+  .profile-edit-dialog > footer button { width: 100%; }
+
+  .community-compose > div { flex-wrap: wrap; }
+  .community-post footer { flex-wrap: wrap; }
+}
+
+@media(max-width:390px){
+  .topbar { padding-left: 10px; padding-right: 10px; }
+  .mobile-logo { min-width: 70px; }
+  .mobile-logo img { width: 88px; }
+  .header-login { min-width: 72px; padding: 0 10px; }
+
+  .content,
+  .re-main,
+  .property-detail,
+  .marketplace-main,
+  .market-detail,
+  .business-main,
+  .community-main,
+  .services-main,
+  .women-main,
+  .profile-dashboard,
+  .listing-form-page,
+  .cabinet-page,
+  .vip-broker-page {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .market-grid,
+  .re-types,
+  .cabinet-stats,
+  .neighborhood-market-grid,
+  .vip2-proof { grid-template-columns: 1fr; }
+
+  .market-product-image { height: 210px; }
+  .location-groups section > div { grid-template-columns: 1fr; }
+  .detail-facts { grid-template-columns: 1fr 1fr; }
+}
+
+@media(max-width:480px){
+  .market-grid { grid-template-columns: 1fr; }
+  .market-product-image { height: 230px; }
+  .market-add span { display: inline; }
+  .market-toolbar { grid-template-columns: minmax(0,1fr) 50px; gap: 8px; }
+  .re-search-panel,
+  .re-main section.re-search-panel { margin-left: 0; margin-right: 0; max-width: 100%; }
+  .location-filter-popover { left: 10px; right: 10px; max-width: calc(100vw - 20px); }
+  .form-grid,.role-choice { gap: 10px; }
+  .new-auth-page { padding: 12px; }
+  .new-auth-card { padding: 28px 18px; }
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    scroll-behavior:auto!important;
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+  }
+}

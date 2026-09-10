@@ -16,6 +16,9 @@ export type AuthUser = { id: string; email?: string; user_metadata?: { full_name
 export function loginPath(next = "/real-estate/cabinet") {
   return `/account?next=${encodeURIComponent(next)}`;
 }
+export function navigateApp(path:string,replace=false){
+  window.dispatchEvent(new CustomEvent("jibu:navigate",{detail:{path,replace}}));
+}
 export function safeNext(value: string | null) {
   if (!value || !value.startsWith("/") || value.startsWith("//") || /[\\\r\n]/.test(value)) return null;
   return value;
@@ -39,7 +42,7 @@ export async function verifiedUser(): Promise<AuthUser | null> {
 }
 export async function requireUser(next = location.pathname + location.search) {
   const user = await verifiedUser();
-  if (!user) location.assign(loginPath(next));
+  if (!user) navigateApp(loginPath(next));
   return user;
 }
 const Context = createContext<{ user: AuthUser | null; loading: boolean }>({ user: null, loading: true });
@@ -77,6 +80,6 @@ export function useBrokerAccess() {
 }
 export function AuthGate({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
-  useEffect(() => { if (!loading && !user) location.replace(loginPath(location.pathname + location.search)); }, [user, loading]);
-  return user ? children : <main className="form-card" role="status">{loading ? "ანგარიშის შემოწმება…" : "გასაგრძელებლად შედი ანგარიშში."}</main>;
+  useEffect(() => { if (!loading && !user) navigateApp(loginPath(location.pathname + location.search),true); }, [user, loading]);
+  return user ? children : null;
 }

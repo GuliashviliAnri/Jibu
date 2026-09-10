@@ -1,1 +1,22 @@
-.route-transition-mask{position:fixed;z-index:200;left:276px;right:0;top:88px;bottom:0;background:#f8f8fb;display:grid;place-items:center;animation:route-mask-in .12s ease-out}.route-transition-mask>div{display:grid;grid-template-columns:38px auto;align-items:center;gap:10px;color:#5f6577;font-size:.8rem;font-weight:750}.route-transition-mask img{object-fit:contain}.route-transition-mask i{grid-column:1/-1;width:112px;height:2px;border-radius:99px;background:#e4e0f2;overflow:hidden;position:relative}.route-transition-mask i:after{content:"";position:absolute;inset:0 auto 0 0;width:44%;border-radius:inherit;background:#6c47e8;animation:route-progress .75s ease-in-out infinite}.header-account-loading{width:92px;height:42px;border-radius:11px;background:#eceaf3;display:block;animation:account-pulse 1s ease-in-out infinite}@keyframes route-mask-in{from{opacity:0}to{opacity:1}}@keyframes route-progress{from{transform:translateX(-110%)}to{transform:translateX(250%)}}@keyframes account-pulse{50%{opacity:.55}}@media(max-width:1040px){.route-transition-mask{left:0;top:72px}}@media(prefers-reduced-motion:reduce){.route-transition-mask,.route-transition-mask i:after,.header-account-loading{animation:none}.route-transition-mask i:after{width:100%}}
+/* Native app-like route swap: no loader, blank screen or hard-refresh flash. */
+::view-transition-old(root){animation:jibu-route-out .12s ease both}
+::view-transition-new(root){animation:jibu-route-in .18s ease both}
+@keyframes jibu-route-out{to{opacity:.96}}
+@keyframes jibu-route-in{from{opacity:.72}to{opacity:1}}
+
+/* Keep the account slot stable while Supabase restores the session. */
+.header-account-loading {
+  width: 92px;
+  height: 40px;
+  flex: 0 0 92px;
+  display: block;
+  visibility: hidden;
+}
+
+@media(max-width:480px){
+  .header-account-loading{width:80px;flex-basis:80px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  ::view-transition-old(root),::view-transition-new(root){animation:none}
+}
