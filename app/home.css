@@ -48,6 +48,7 @@
 .home-property-empty strong { display:block; color:#172139; font-size:.95rem; line-height:1.5; }
 .home-property-empty p { margin:4px 0 0; color:#687083; font-size:.875rem; line-height:1.55; }
 .home-property-empty > a { margin-left:auto; min-height:40px; padding:9px 13px; border-radius:10px; background:#6846e8; color:#fff; display:flex; align-items:center; justify-content:center; font-size:.82rem; font-weight:700; white-space:nowrap; }
+.home-content section:has(> .home-property-empty) { display:none; }
 .sidebar .ai-agent { margin-top:14px; padding:12px; border-radius:12px; min-height:0; }
 .sidebar .ai-agent .agent-title { align-items:center; gap:8px; }
 .sidebar .ai-agent .agent-title strong { font-size:.875rem; }
