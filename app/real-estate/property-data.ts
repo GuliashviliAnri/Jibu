@@ -1,9 +1,29 @@
-const gallery=(main:string,...rest:string[])=>[main,...rest].map(image=>`/assets/concept/${image}.webp`);
-export const propertyListings=[
- {slug:"city-view-residence",image:"property-1",photos:gallery("property-1","property-4","property-2","property-3"),tag:"TURBO",promotion:"turbo" as const,owner:true,title:"City View Residence",deal:"იყიდება" as const,location:"თბილისი, საბურთალო, პეკინის გამზირი",longitude:44.7691,latitude:41.7213,price:"345,000 ₾",area:"75",beds:"3 ოთახი",phone:"+995 555 12 34 56",share:"3%",floor:"7/12",bedrooms:"2",views:642,description:"თანამედროვე ბინა ახალ საცხოვრებელ კომპლექსში, ნათელი მისაღებით, ფუნქციური დაგეგმარებითა და პარკინგით."},
- {slug:"design-apartment",image:"property-2",photos:gallery("property-2","property-1","property-4","property-3"),tag:"TURBO",promotion:"turbo" as const,owner:false,title:"Design Apartment",deal:"იყიდება" as const,location:"თბილისი, ვაკე, ჭავჭავაძის გამზირი",longitude:44.763,latitude:41.7087,price:"420,000 ₾",area:"112",beds:"4 ოთახი",phone:"+995 599 45 67 89",share:"2.5%",floor:"3/9",bedrooms:"2",views:518,description:"ნათელი და თანამედროვე ბინა ვაკის მშვიდ ქუჩაზე. სრულად გარემონტებული ინტერიერი, დიდი მისაღები და ქალაქის ხედი."},
- {slug:"black-sea-villa",image:"property-3",photos:gallery("property-3","property-4","property-2","property-1"),tag:"VIP",promotion:"vip" as const,owner:true,title:"Black Sea Villa",deal:"იყიდება" as const,location:"ბათუმი, მწვანე კონცხი",longitude:41.6917,latitude:41.6913,price:"1,850,000 ₾",area:"420",beds:"6 ოთახი",phone:"+995 568 20 30 40",share:"3%",floor:"2/2",bedrooms:"4",views:1248,description:"გამორჩეული ვილა ზღვის ხედით, კერძო ეზოთი, აუზითა და პრემიუმ ხარისხის ინტერიერით."},
- {slug:"panorama-office",image:"property-4",photos:gallery("property-4","property-1","property-3","property-2"),tag:"VIP",promotion:"vip" as const,owner:false,title:"Panorama Office",deal:"ქირავდება" as const,location:"თბილისი, რუსთაველის გამზირი",longitude:44.7956,latitude:41.7001,price:"4,500 ₾ / თვე",area:"150",beds:"ოფისი",phone:"+995 577 11 22 33",share:"50%",floor:"5/8",bedrooms:"4 სივრცე",views:389,description:"ცენტრალურ ლოკაციაზე მდებარე ნათელი კომერციული ფართი, შეხვედრების ოთახებითა და სრულად მოწყობილი სამუშაო გარემოთი."},
- {slug:"green-hill-apartments",image:"property-1",photos:gallery("property-1","property-2","property-4","property-3"),tag:"VIP",promotion:"vip" as const,owner:true,title:"Green Hill Apartments",deal:"იყიდება" as const,location:"თბილისი, ლისი, ლისის ტბის გზა",longitude:44.7419,latitude:41.7429,price:"298,000 ₾",area:"68",beds:"3 ოთახი",phone:"+995 555 77 88 99",share:"3%",floor:"4/10",bedrooms:"2",views:276,description:"მყუდრო ბინა მწვანე ხედებით, მშვიდ უბანში და ქალაქთან მოსახერხებელი კავშირით."},
- {slug:"vake-garden-home",image:"property-2",photos:gallery("property-2","property-4","property-1","property-3"),tag:"VIP",promotion:"vip" as const,owner:false,title:"Vake Garden Home",deal:"იყიდება" as const,location:"თბილისი, ვაკე, აბაშიძის ქუჩა",longitude:44.7568,latitude:41.7098,price:"610,000 ₾",area:"156",beds:"5 ოთახი",phone:"+995 591 44 55 66",share:"2%",floor:"6/9",bedrooms:"3",views:731,description:"ფართო საოჯახო ბინა დიდი ტერასით, მაღალი ხარისხის რემონტით და დაცული სადარბაზოთი."}
-];
+export type PropertyListing = {
+  slug: string;
+  image?: string;
+  photos: string[];
+  coverUrl?: string;
+  tag: string;
+  promotion: "turbo" | "vip" | "standard";
+  owner: boolean;
+  title: string;
+  deal: "იყიდება" | "ქირავდება";
+  location: string;
+  longitude: number;
+  latitude: number;
+  price: string;
+  area: string;
+  beds: string;
+  phone: string;
+  share: string;
+  floor: string;
+  bedrooms: string;
+  views: number;
+  description: string;
+  contactName?: string;
+  remote?: boolean;
+};
+
+// Production listings are loaded from Supabase. The local collection stays
+// empty so sample properties never appear when the database has no rows.
+export const propertyListings: PropertyListing[] = [];

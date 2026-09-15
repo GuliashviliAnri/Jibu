@@ -2,12 +2,12 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { propertyListings } from "../property-data";
+import type { PropertyListing } from "../property-data";
 import { promotionPackages, promotionQuote, extendPromotion } from "../promotion-pricing";
 import type { PromotionKind } from "../promotion-pricing";
 import { currentAccessToken, useAuth, useBrokerAccess } from "../../auth-client";
 
-type ManagedListing = (typeof propertyListings)[number] & { daysLeft: number; vipDays: number; vipActive: number; turboDays: number; turboActive: number; remoteId?:string; imageUrl?:string };
+type ManagedListing = PropertyListing & { daysLeft: number; vipDays: number; vipActive: number; turboDays: number; turboActive: number; remoteId?:string; imageUrl?:string };
 
 const initialItems: ManagedListing[] = [];
 const vipOptions = promotionPackages.map(p => p.days);
@@ -30,7 +30,7 @@ export default function CabinetWorkspace({supabaseUrl,publishableKey}:{supabaseU
           if(response.ok){
             const rows=await response.json();
             if(!cancelled)setItems(rows.map((row:any)=>({
-              remoteId:row.id,slug:row.slug,image:"property-1",imageUrl:row.cover_url||undefined,
+              remoteId:row.id,slug:row.slug,imageUrl:row.cover_url||undefined,
               photos:row.cover_url?[row.cover_url]:[],tag:row.is_turbo?"TURBO":row.is_vip?"VIP":"ახალი",
               promotion:row.is_turbo?"turbo":row.is_vip?"vip":"standard",owner:row.publisher_kind==="owner",
               title:row.title,deal:row.deal_type==="rent"?"ქირავდება":"იყიდება",location:row.location_label,
@@ -44,9 +44,7 @@ export default function CabinetWorkspace({supabaseUrl,publishableKey}:{supabaseU
             return;
           }
         }
-        const edits=JSON.parse(localStorage.getItem("jibu:edited-listings")||"{}");
-        const saved=JSON.parse(localStorage.getItem("jibu:user-listings")||"[]");
-        if(Array.isArray(saved)&&!cancelled)setItems(saved.map((item:any)=>({...item,...(edits[item.slug]||{}),image:item.image||"property-1",photos:item.photos||[],phone:item.phone||"",share:item.share||"",daysLeft:item.daysLeft??30,vipDays:item.vipDays??1,vipActive:item.vipActive??(item.promotion==="vip"?1:0),turboDays:item.turboDays??1,turboActive:item.turboActive??(item.promotion==="turbo"?1:0)})));
+        if(!cancelled)setItems([]);
       }catch{}
     };
     void load();
@@ -80,7 +78,7 @@ export default function CabinetWorkspace({supabaseUrl,publishableKey}:{supabaseU
     <section className="cabinet-list">{items.map(item => {
       const tone = timeTone(item.daysLeft);
       return <article key={item.slug} className={`managed-listing ${tone}`}>
-        <div className="cabinet-photo"><Image unoptimized src={item.imageUrl||`/assets/concept/${item.image}.webp`} alt={item.title} fill/></div>
+        <div className="cabinet-photo"><Image unoptimized src={item.imageUrl||"/assets/property-placeholder.svg"} alt={item.title} fill/></div>
         <div className="cabinet-property-copy"><div className="cabinet-badges"><span className="active">აქტიური</span>{item.turboActive>0&&<span className="turbo">Turbo · {item.turboActive} დღე</span>}{item.vipActive>0&&<span className="vip">VIP · {item.vipActive} დღე</span>}</div><h2>{item.title}</h2><p>{item.location} · {item.area} მ² · {item.floor} სართული</p><strong>{item.price}</strong><div className="listing-lifetime"><div><span>განცხადების დარჩენილი დრო</span><b>{item.daysLeft} დღე</b></div><i><em style={{width:`${Math.min(100,(item.daysLeft/30)*100)}%`}}/></i><small>{tone==="safe"?"საკმარისი დროა დარჩენილი":tone==="warning"?"ვადის ნახევარზე ნაკლები დარჩა":"ვადა მალე იწურება"}</small></div></div>
         <aside className="listing-management compact-management">
           <b className="managed-views">{item.views.toLocaleString()} ნახვა</b>

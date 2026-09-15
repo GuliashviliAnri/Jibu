@@ -5,7 +5,7 @@ import { useBrokerAccess } from "../auth-client";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import {useRouter} from "next/navigation";
 import { Icon } from "../page";
-import { propertyListings as listings } from "./property-data";
+import type { PropertyListing } from "./property-data";
 import { useListingRail } from "./use-listing-rail";
 
 const locations:Record<string,string[]>={
@@ -28,13 +28,6 @@ const districts:Record<string,string[]>={
   "ქუთაისი":["ქალაქის ცენტრი","ბალახვანი","საფიჩხია","ავანგარდი","ნიკეა","ჭომა","მუხნარი"],
 };
 const USD_RATE=2.6125;
-const marketRows=[
- {district:"ვაკე",price:3924,change:3.8},
- {district:"საბურთალო",price:4382,change:2.1},
- {district:"ლისი",price:4382,change:-1.6},
- {district:"მწვანე კონცხი",price:4405,change:-2.4},
-];
-
 function regionFor(location:string){const city=location.split(",")[0].trim();return Object.entries(locations).find(([,cities])=>cities.includes(city))?.[0]||""}
 function displayPrice(price:string,currency:"GEL"|"USD"){
  if(currency==="GEL")return price;
@@ -47,11 +40,11 @@ function displayAreaPrice(price:number,currency:"GEL"|"USD"){
  return `${amount.toLocaleString(currency==="USD"?"en-US":"ka-GE")} ${currency==="USD"?"$":"₾"} / მ²`;
 }
 
-type Listing=(typeof listings)[number]&{coverUrl?:string;remote?:boolean;promotion:"turbo"|"vip"|"standard"};
+type Listing=PropertyListing;
 export default function PropertyWorkspace({supabaseUrl,publishableKey}:{supabaseUrl:string;publishableKey:string}) {
   const router=useRouter();
   const brokerAccess = useBrokerAccess();
-  const [allListings,setAllListings]=useState<Listing[]>(listings as Listing[]);
+  const [allListings,setAllListings]=useState<Listing[]>([]);
   const [query, setQuery] = useState("");
   const [selectedLocations,setSelectedLocations]=useState<string[]>([]),[locationOpen,setLocationOpen]=useState(false),[minPrice,setMinPrice]=useState(""),[maxPrice,setMaxPrice]=useState(""),[minArea,setMinArea]=useState(""),[maxArea,setMaxArea]=useState(""),[currency,setCurrency]=useState<"GEL"|"USD">("GEL");
   const [ownerOnly, setOwnerOnly] = useState(false);
@@ -61,7 +54,7 @@ export default function PropertyWorkspace({supabaseUrl,publishableKey}:{supabase
     const controller=new AbortController();
     fetch(`${supabaseUrl}/rest/v1/property_catalog?select=slug,title,publisher_kind,deal_type,property_type,location_label,longitude,latitude,price,currency,area,rooms,bedrooms,floor,total_floors,contact_phone,broker_share,description,view_count,is_vip,is_turbo,cover_url&status=eq.active&order=published_at.desc`,{headers:{apikey:publishableKey},signal:controller.signal})
       .then(response=>response.ok?response.json():Promise.reject())
-      .then((rows:any[])=>{const remote=rows.map(row=>({slug:row.slug,image:"property-1",coverUrl:row.cover_url||undefined,tag:row.is_turbo?"TURBO":row.is_vip?"VIP":"ახალი",promotion:row.is_turbo?"turbo":row.is_vip?"vip":"standard",owner:row.publisher_kind==="owner",title:row.title,deal:row.deal_type==="rent"?"ქირავდება":"იყიდება",location:row.location_label,longitude:Number(row.longitude),latitude:Number(row.latitude),price:`${Number(row.price).toLocaleString("en-US")} ${row.currency==="USD"?"$":"₾"}`,area:String(row.area),beds:row.rooms?`${row.rooms} ოთახი`:row.property_type,phone:row.contact_phone,share:row.broker_share||"",floor:[row.floor,row.total_floors].filter((x:any)=>x!==null).join("/")||"—",bedrooms:String(row.bedrooms||0),views:Number(row.view_count)||0,description:row.description,photos:row.cover_url?[row.cover_url]:[],remote:true} as Listing));setAllListings([...remote,...listings.filter(item=>!remote.some(row=>row.slug===item.slug))] as Listing[])}).catch(()=>{});
+      .then((rows:any[])=>{const remote=rows.map(row=>({slug:row.slug,coverUrl:row.cover_url||undefined,tag:row.is_turbo?"TURBO":row.is_vip?"VIP":"ახალი",promotion:row.is_turbo?"turbo":row.is_vip?"vip":"standard",owner:row.publisher_kind==="owner",title:row.title,deal:row.deal_type==="rent"?"ქირავდება":"იყიდება",location:row.location_label,longitude:Number(row.longitude),latitude:Number(row.latitude),price:`${Number(row.price).toLocaleString("en-US")} ${row.currency==="USD"?"$":"₾"}`,area:String(row.area),beds:row.rooms?`${row.rooms} ოთახი`:row.property_type,phone:row.contact_phone,share:row.broker_share||"",floor:[row.floor,row.total_floors].filter((x:any)=>x!==null).join("/")||"—",bedrooms:String(row.bedrooms||0),views:Number(row.view_count)||0,description:row.description,photos:row.cover_url?[row.cover_url]:[],remote:true} as Listing));setAllListings(remote)}).catch(()=>{});
     return()=>controller.abort();
   },[supabaseUrl,publishableKey]);
   const shown = useMemo(
@@ -76,6 +69,21 @@ export default function PropertyWorkspace({supabaseUrl,publishableKey}:{supabase
   );
   const turboRail = useListingRail(useMemo(() => shown.filter(p => p.promotion === "turbo"), [shown]));
   const vipRail = useListingRail(useMemo(() => shown.filter(p => p.promotion === "vip"), [shown]));
+  const marketRows=useMemo(()=>{
+    const grouped=new Map<string,{total:number;count:number}>();
+    for(const item of allListings){
+      if(item.deal!=="იყიდება")continue;
+      const area=Number(item.area);
+      const rawPrice=Number(item.price.replace(/[^0-9.]/g,""));
+      if(!Number.isFinite(area)||area<=0||!Number.isFinite(rawPrice)||rawPrice<=0)continue;
+      const district=Object.values(districts).flat().find(name=>item.location.includes(name));
+      if(!district)continue;
+      const priceInGel=item.price.includes("$")?rawPrice*USD_RATE:rawPrice;
+      const current=grouped.get(district)||{total:0,count:0};
+      grouped.set(district,{total:current.total+priceInGel/area,count:current.count+1});
+    }
+    return [...grouped.entries()].map(([district,value])=>({district,price:Math.round(value.total/value.count),count:value.count})).sort((a,b)=>b.count-a.count).slice(0,4);
+  },[allListings]);
   const addListing = (p: Listing) =>
     brokerAccess && window.dispatchEvent(new CustomEvent("jibu:add-property", { detail: p }));
   return (
@@ -95,16 +103,8 @@ export default function PropertyWorkspace({supabaseUrl,publishableKey}:{supabase
         </div>
         <div className="re-stats">
           <div>
-            <strong>2,480+</strong>
+            <strong>{allListings.length.toLocaleString("ka-GE")}</strong>
             <span>აქტიური განცხადება</span>
-          </div>
-          <div>
-            <strong>186</strong>
-            <span>ახალი ამ კვირაში</span>
-          </div>
-          <div>
-            <strong>98%</strong>
-            <span>ვერიფიცირებული</span>
           </div>
         </div>
       </section>
@@ -126,23 +126,23 @@ export default function PropertyWorkspace({supabaseUrl,publishableKey}:{supabase
       <div className="filter-summary"><span>{shown.length} განცხადება მოიძებნა</span><small>1 USD = {USD_RATE} ₾ · ეროვნული ბანკის ოფიციალური კურსი</small>{(query||selectedLocations.length||minPrice||maxPrice||minArea||maxArea||ownerOnly)&&<button onClick={()=>{setQuery("");setSelectedLocations([]);setMinPrice("");setMaxPrice("");setMinArea("");setMaxArea("");setOwnerOnly(false)}}>ფილტრების გასუფთავება</button>}</div>
       <section className="re-types">
         {[
-          ["building", "ბინები", "1,240 განცხადება"],
-          ["home", "სახლები", "486 განცხადება"],
-          ["briefcase", "კომერციული", "312 განცხადება"],
-          ["crown", "ახალი პროექტები", "64 პროექტი"],
-        ].map(([i, t, s]) => (
+          ["building", "ბინები"],
+          ["home", "სახლები"],
+          ["briefcase", "კომერციული"],
+          ["crown", "ახალი პროექტები"],
+        ].map(([i, t]) => (
           <button key={t}>
             <span>
               <Icon name={i as "building"} size={22} />
             </span>
             <b>{t}</b>
-            <small>{s}</small>
+            <small>დათვალიერება</small>
           </button>
         ))}
       </section>
       <div className="re-title">
         <div>
-          <h2>Turbo განცხადებები</h2>
+          <h2>{turboRail.items.length?"Turbo განცხადებები":"განცხადებები"}</h2>
         </div>
         <div className="re-page-actions">
           <a className="vip-link" href="/real-estate/vip-broker">
@@ -154,7 +154,7 @@ export default function PropertyWorkspace({supabaseUrl,publishableKey}:{supabase
           </a>
         </div>
       </div>
-      <div className="promotion-carousel"><button className="rail-arrow rail-prev" aria-label="წინა Turbo განცხადებები" onClick={()=>turboRail.move(-1)}>‹</button><section className="re-grid promotion-rail" ref={turboRail.ref}>
+      {turboRail.items.length>0&&<div className="promotion-carousel"><button className="rail-arrow rail-prev" aria-label="წინა Turbo განცხადებები" onClick={()=>turboRail.move(-1)}>‹</button><section className="re-grid promotion-rail" ref={turboRail.ref}>
         {turboRail.items.map((p) => (
           <article
             className={`re-card clickable ${p.owner ? "owner-listing" : ""}`}
@@ -170,7 +170,7 @@ export default function PropertyWorkspace({supabaseUrl,publishableKey}:{supabase
             <div className="re-photo">
               <Image
                 unoptimized
-                src={p.coverUrl||`/assets/concept/${p.image}.webp`}
+                src={p.coverUrl||"/assets/property-placeholder.svg"}
                 alt={p.title}
                 fill
                 sizes="(max-width:760px) 100vw,33vw"
@@ -213,22 +213,23 @@ export default function PropertyWorkspace({supabaseUrl,publishableKey}:{supabase
             </div>
           </article>
         ))}
-      </section><button className="rail-arrow rail-next" aria-label="შემდეგი Turbo განცხადებები" onClick={()=>turboRail.move(1)}>›</button></div>
-      <section className="neighborhood-market">
-        <header><div><span>მხოლოდ გასაყიდი ბინები</span><h2>სად იაფდება და სად ჯობს შეძენა</h2><p>უბნების საშუალო ფასი ერთ კვადრატულ მეტრზე.</p></div><div className="market-legend"><span><i className="up"/> ფასი იზრდება</span><span><i className="down"/> ფასი იკლებს</span></div></header>
-        <div className="neighborhood-market-grid">{marketRows.map(row=><article key={row.district}><div><span>{row.district}</span><b className={row.change>0?"up":"down"}>{row.change>0?"↑":"↓"} {Math.abs(row.change)}%</b></div><strong>{displayAreaPrice(row.price,currency)}</strong><small>{row.change<0?"შესაძენად ხელსაყრელი":"ფასი ზრდის მიმართულებითაა"}</small></article>)}</div>
-        <footer><span>ბოლო 30 დღის ცვლილება</span><small>მონაცემები განახლდება განცხადებების ფასების ისტორიის მიხედვით.</small></footer>
-      </section>
-      <div className="re-title promotion-title vip-section-title"><div><h2>VIP განცხადებები</h2></div></div>
+      </section><button className="rail-arrow rail-next" aria-label="შემდეგი Turbo განცხადებები" onClick={()=>turboRail.move(1)}>›</button></div>}
+      {marketRows.length>0&&<section className="neighborhood-market">
+        <header><div><span>მხოლოდ გასაყიდი ბინები</span><h2>უბნების მიმდინარე საშუალო ფასი</h2><p>რეალური განცხადებებიდან დათვლილი ფასი ერთ კვადრატულ მეტრზე.</p></div></header>
+        <div className="neighborhood-market-grid">{marketRows.map(row=><article key={row.district}><div><span>{row.district}</span><b>{row.count} განცხადება</b></div><strong>{displayAreaPrice(row.price,currency)}</strong><small>მიმდინარე განცხადებების საშუალო ფასი</small></article>)}</div>
+        <footer><span>რეალური მონაცემები</span><small>მაჩვენებელი ავტომატურად განახლდება ახალი განცხადებების დამატებისას.</small></footer>
+      </section>}
+      {vipRail.items.length>0&&<><div className="re-title promotion-title vip-section-title"><div><h2>VIP განცხადებები</h2></div></div>
       <div className="promotion-carousel"><button className="rail-arrow rail-prev" aria-label="წინა VIP განცხადებები" onClick={()=>vipRail.move(-1)}>‹</button><section className="re-grid vip-listing-grid promotion-rail" ref={vipRail.ref}>
         {vipRail.items.map((p) => (
           <article className={`re-card clickable vip-listing ${p.owner ? "owner-listing" : ""}`} tabIndex={0} role="link" onClick={() => router.push(`/real-estate/property/${p.slug}`)} onKeyDown={(e) => {if (e.key === "Enter") router.push(`/real-estate/property/${p.slug}`);}} key={p.title}>
-            <div className="re-photo"><Image unoptimized src={p.coverUrl||`/assets/concept/${p.image}.webp`} alt={p.title} fill sizes="(max-width:760px) 100vw,33vw"/><span>{p.tag}</span>{p.owner && <b className="owner-badge">მესაკუთრე</b>}<button onClick={(e) => e.stopPropagation()} aria-label="რჩეულებში"><Icon name="heart" size={18}/></button></div>
+            <div className="re-photo"><Image unoptimized src={p.coverUrl||"/assets/property-placeholder.svg"} alt={p.title} fill sizes="(max-width:760px) 100vw,33vw"/><span>{p.tag}</span>{p.owner && <b className="owner-badge">მესაკუთრე</b>}<button onClick={(e) => e.stopPropagation()} aria-label="რჩეულებში"><Icon name="heart" size={18}/></button></div>
 <div className="re-card-body"><small><Icon name="location" size={13}/>{p.location}</small><h3>{p.title}</h3><div className="re-facts"><span>{p.beds}</span><span>{p.area} მ²</span><span>სართული {p.floor}</span></div><div className="card-views">{p.views.toLocaleString()} ნახვა</div><footer><strong>{displayPrice(p.price,currency)}</strong><button className="add-to-excel" aria-disabled={!brokerAccess} title={!brokerAccess ? "საჭიროა აქტიური VIP Broker" : "ცხრილში დამატება"} onClick={(e)=>{e.stopPropagation();addListing(p)}}>ცხრილში დამატება</button></footer></div>
           </article>
         ))}
-      </section><button className="rail-arrow rail-next" aria-label="შემდეგი VIP განცხადებები" onClick={()=>vipRail.move(1)}>›</button></div>
-      {shown.some(p=>p.promotion==="standard")&&<><div className="re-title promotion-title"><div><h2>ახალი განცხადებები</h2></div></div><section className="re-grid vip-listing-grid">{shown.filter(p=>p.promotion==="standard").map(p=><article className={`re-card clickable ${p.owner?"owner-listing":""}`} tabIndex={0} role="link" onClick={()=>router.push(`/real-estate/property/${p.slug}`)} onKeyDown={e=>{if(e.key==="Enter")router.push(`/real-estate/property/${p.slug}`)}} key={p.slug}><div className="re-photo"><Image unoptimized src={p.coverUrl||`/assets/concept/${p.image}.webp`} alt={p.title} fill sizes="(max-width:760px) 100vw,33vw"/><span>{p.tag}</span>{p.owner&&<b className="owner-badge">მესაკუთრე</b>}</div><div className="re-card-body"><small><Icon name="location" size={13}/>{p.location}</small><h3>{p.title}</h3><div className="re-facts"><span>{p.beds}</span><span>{p.area} მ²</span><span>სართული {p.floor}</span></div><div className="card-views">{p.views.toLocaleString()} ნახვა</div><footer><strong>{displayPrice(p.price,currency)}</strong></footer></div></article>)}</section></>}
+      </section><button className="rail-arrow rail-next" aria-label="შემდეგი VIP განცხადებები" onClick={()=>vipRail.move(1)}>›</button></div></>}
+      {shown.some(p=>p.promotion==="standard")&&<><div className="re-title promotion-title"><div><h2>ახალი განცხადებები</h2></div></div><section className="re-grid vip-listing-grid">{shown.filter(p=>p.promotion==="standard").map(p=><article className={`re-card clickable ${p.owner?"owner-listing":""}`} tabIndex={0} role="link" onClick={()=>router.push(`/real-estate/property/${p.slug}`)} onKeyDown={e=>{if(e.key==="Enter")router.push(`/real-estate/property/${p.slug}`)}} key={p.slug}><div className="re-photo"><Image unoptimized src={p.coverUrl||"/assets/property-placeholder.svg"} alt={p.title} fill sizes="(max-width:760px) 100vw,33vw"/><span>{p.tag}</span>{p.owner&&<b className="owner-badge">მესაკუთრე</b>}</div><div className="re-card-body"><small><Icon name="location" size={13}/>{p.location}</small><h3>{p.title}</h3><div className="re-facts"><span>{p.beds}</span><span>{p.area} მ²</span><span>სართული {p.floor}</span></div><div className="card-views">{p.views.toLocaleString()} ნახვა</div><footer><strong>{displayPrice(p.price,currency)}</strong></footer></div></article>)}</section></>}
+      {shown.length===0&&<section className="re-empty-listings"><span><Icon name="building" size={26}/></span><h2>{allListings.length?"ამ ფილტრით განცხადება ვერ მოიძებნა":"განცხადებები ჯერ არ დამატებულა"}</h2><p>{allListings.length?"შეცვალე ან გაასუფთავე ფილტრები და თავიდან სცადე.":"დაამატეთ პირველი რეალური ქონება — გამოქვეყნებისთანავე ის კატალოგსა და რუკაზე გამოჩნდება."}</p>{!allListings.length&&<a href="/real-estate/add">პირველი განცხადების დამატება</a>}</section>}
     </main>
   );
 }

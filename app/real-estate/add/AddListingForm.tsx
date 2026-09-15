@@ -77,7 +77,7 @@ export default function AddListingForm({supabaseUrl,publishableKey}:{supabaseUrl
       description: x.description,
     });
     setPhotos(
-      (x.photos?.length ? x.photos : [`/assets/concept/${x.image}.webp`]).map(
+      (x.photos?.length ? x.photos : ["/assets/property-placeholder.svg"]).map(
         (url: string, i: number) => ({
           id: `saved-${i}`,
           url,

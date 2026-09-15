@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-labelledby="title description">
+  <title id="title">JIBU უძრავი ქონება</title>
+  <desc id="description">ფოტო ჯერ არ არის დამატებული</desc>
+  <rect width="1200" height="800" fill="#f4f1fb"/>
+  <circle cx="600" cy="350" r="112" fill="#e8e1fa"/>
+  <path d="M514 376V274l86-48 86 48v102l-86 48-86-48Z" fill="#0b1734"/>
+  <path d="m600 319 86-45v102l-86 48V319Z" fill="#7250ef"/>
+  <text x="600" y="540" text-anchor="middle" fill="#0b1734" font-family="Arial, sans-serif" font-size="34" font-weight="700">JIBU</text>
+  <text x="600" y="587" text-anchor="middle" fill="#73798a" font-family="Arial, sans-serif" font-size="24">ფოტო ჯერ არ არის დამატებული</text>
+</svg>

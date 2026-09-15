@@ -1,25 +1,24 @@
 import { notFound } from "next/navigation";
 import { Header, Icon, Sidebar } from "../../../page";
-import { propertyListings } from "../../property-data";
 import AddToBrokerSheet from "./AddToBrokerSheet";
 import PropertyGallery from "./PropertyGallery";
 import CurrencyPrice from "./CurrencyPrice";
 import PropertyLocationMap from "./PropertyLocationMap";
 
 export function generateStaticParams() {
-  return propertyListings.map((p) => ({ slug: p.slug }));
+  return [];
 }
 
 async function remoteProperty(slug:string){
   const url=process.env.SUPABASE_URL,key=process.env.SUPABASE_PUBLISHABLE_KEY;
   if(!url||!key)return null;
   try{
-    const response=await fetch(`${url}/rest/v1/property_catalog?slug=eq.${encodeURIComponent(slug)}&select=*`,{headers:{apikey:key},cache:"no-store"});
+    const response=await fetch(`${url}/rest/v1/property_catalog?slug=eq.${encodeURIComponent(slug)}&status=eq.active&select=*`,{headers:{apikey:key},cache:"no-store"});
     if(!response.ok)return null;
     const row=(await response.json())[0];if(!row)return null;
     const photoResponse=await fetch(`${url}/rest/v1/property_photos?property_id=eq.${row.id}&select=public_url&order=sort_order`,{headers:{apikey:key},cache:"no-store"});
     const photos=photoResponse.ok?(await photoResponse.json()).map((photo:{public_url:string})=>photo.public_url).filter(Boolean):[];
-    return {slug:row.slug,image:"property-1",photos,coverUrl:row.cover_url,tag:row.is_turbo?"TURBO":row.is_vip?"VIP":"ახალი",promotion:row.is_turbo?"turbo":row.is_vip?"vip":"standard",owner:row.publisher_kind==="owner",title:row.title,deal:row.deal_type==="rent"?"ქირავდება":"იყიდება",location:row.location_label,longitude:Number(row.longitude),latitude:Number(row.latitude),price:`${Number(row.price).toLocaleString("en-US")} ${row.currency==="USD"?"$":"₾"}`,area:String(row.area),beds:row.rooms?`${row.rooms} ოთახი`:row.property_type,phone:row.contact_phone,share:row.broker_share||"",floor:[row.floor,row.total_floors].filter((x:unknown)=>x!==null).join("/")||"—",bedrooms:String(row.bedrooms||0),views:Number(row.view_count)||0,description:row.description,contactName:row.contact_name};
+    return {slug:row.slug,photos,coverUrl:row.cover_url,tag:row.is_turbo?"TURBO":row.is_vip?"VIP":"ახალი",promotion:row.is_turbo?"turbo":row.is_vip?"vip":"standard",owner:row.publisher_kind==="owner",title:row.title,deal:row.deal_type==="rent"?"ქირავდება":"იყიდება",location:row.location_label,longitude:Number(row.longitude),latitude:Number(row.latitude),price:`${Number(row.price).toLocaleString("en-US")} ${row.currency==="USD"?"$":"₾"}`,area:String(row.area),beds:row.rooms?`${row.rooms} ოთახი`:row.property_type,phone:row.contact_phone,share:row.broker_share||"",floor:[row.floor,row.total_floors].filter((x:unknown)=>x!==null).join("/")||"—",bedrooms:String(row.bedrooms||0),views:Number(row.view_count)||0,description:row.description,contactName:row.contact_name};
   }catch{return null}
 }
 
@@ -29,9 +28,9 @@ export default async function PropertyDetail({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const p:any = propertyListings.find((item) => item.slug === slug) || await remoteProperty(slug);
+  const p:any = await remoteProperty(slug);
   if (!p) notFound();
-  const mainPhoto = p.coverUrl||`/assets/concept/${p.image}.webp`;
+  const mainPhoto = p.coverUrl||"/assets/property-placeholder.svg";
   return (
     <div className="app-shell real-estate-shell">
       <Sidebar active="real-estate" />

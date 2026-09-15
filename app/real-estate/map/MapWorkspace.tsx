@@ -4,12 +4,11 @@ import Image from "next/image";
 import * as maplibregl from "maplibre-gl";
 import "../../map-worker";
 import type { GeoJSONSource } from "maplibre-gl";
-import { propertyListings } from "../property-data";
 import { osmStyle } from "../../osm-style";
 import { mapCollection } from "../listing-performance";
 
-type Listing = {slug:string;image:string;tag:string;title:string;deal:string;location:string;longitude:number;latitude:number;price:string;area:string;local?:boolean};
-export default function MapWorkspace() {
+type Listing = {slug:string;coverUrl?:string;tag:string;title:string;deal:string;location:string;longitude:number;latitude:number;price:string;area:string};
+export default function MapWorkspace({supabaseUrl,publishableKey}:{supabaseUrl:string;publishableKey:string}) {
   const host = useRef<HTMLDivElement>(null),
     mapRef = useRef<maplibregl.Map | null>(null),
     [selected, setSelected] = useState<Listing | null>(null),
@@ -19,9 +18,28 @@ export default function MapWorkspace() {
     [showHomes,setShowHomes] = useState(false),
     [mapError, setMapError] = useState(""),
     [deal,setDeal]=useState<"all"|"იყიდება"|"ქირავდება">("all"),
-    [allListings,setAllListings]=useState<Listing[]>(propertyListings),
-    allRef=useRef<Listing[]>(propertyListings);
-  useEffect(()=>{try{const local=JSON.parse(localStorage.getItem("jibu:user-listings")||"[]");if(Array.isArray(local)){const merged=[...propertyListings,...local.filter(p=>p&&typeof p.slug==="string"&&typeof p.title==="string"&&typeof p.location==="string")] as Listing[];setAllListings(merged)}}catch{}},[]);
+    [allListings,setAllListings]=useState<Listing[]>([]),
+    allRef=useRef<Listing[]>([]);
+  useEffect(()=>{
+    if(!supabaseUrl||!publishableKey){setAllListings([]);return}
+    const controller=new AbortController();
+    fetch(`${supabaseUrl}/rest/v1/property_catalog?select=slug,title,deal_type,location_label,longitude,latitude,price,currency,area,cover_url,is_vip,is_turbo&status=eq.active&order=published_at.desc`,{headers:{apikey:publishableKey},cache:"no-store",signal:controller.signal})
+      .then(response=>response.ok?response.json():Promise.reject())
+      .then((rows:Array<Record<string,unknown>>)=>setAllListings(rows.map(row=>({
+        slug:String(row.slug||""),
+        coverUrl:typeof row.cover_url==="string"?row.cover_url:undefined,
+        tag:row.is_turbo?"TURBO":row.is_vip?"VIP":"ახალი",
+        title:String(row.title||""),
+        deal:row.deal_type==="rent"?"ქირავდება":"იყიდება",
+        location:String(row.location_label||""),
+        longitude:Number(row.longitude),
+        latitude:Number(row.latitude),
+        price:`${Number(row.price).toLocaleString("en-US")} ${row.currency==="USD"?"$":"₾"}`,
+        area:String(row.area||""),
+      })).filter(item=>item.slug&&Number.isFinite(item.longitude)&&Number.isFinite(item.latitude))))
+      .catch(error=>{if(error?.name!=="AbortError")setAllListings([])});
+    return()=>controller.abort();
+  },[supabaseUrl,publishableKey]);
   const deferredQuery = useDeferredValue(query);
   const listings = useMemo(
     () =>
@@ -221,11 +239,11 @@ export default function MapWorkspace() {
             <button onClick={() => setSelected(null)} aria-label="დახურვა">
               ×
             </button>
-            <a href={selected.local?"/real-estate/cabinet":`/real-estate/property/${selected.slug}`}>
+            <a href={`/real-estate/property/${selected.slug}`}>
               <div>
                 <Image
                   unoptimized
-                  src={`/assets/concept/${selected.image}.webp`}
+                  src={selected.coverUrl||"/assets/property-placeholder.svg"}
                   alt={selected.title}
                   fill
                   sizes="320px"
@@ -238,7 +256,7 @@ export default function MapWorkspace() {
                 <strong>{selected.price}</strong>
                 <span>{selected.area} მ²</span>
               </footer>
-              <b>{selected.local?"ჩემს განცხადებებში ნახვა →":"დეტალების ნახვა →"}</b>
+              <b>დეტალების ნახვა →</b>
             </a>
           </article>
         )}
